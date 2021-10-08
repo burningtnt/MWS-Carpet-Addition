@@ -15,9 +15,6 @@
   "icon": "assets/pca/icon.png",
   "environment": "*",
   "entrypoints": {
-    "server": [
-      "com.plusls.carpet.PcaMod"
-    ]
   },
   "mixins": [
     "pca.mixins.json"
