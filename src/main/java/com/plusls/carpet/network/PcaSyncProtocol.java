@@ -1,18 +1,15 @@
 package com.plusls.carpet.network;
 
-import carpet.patches.EntityPlayerMPFake;
 import com.plusls.carpet.PcaMod;
 import com.plusls.carpet.PcaSettings;
+import com.plusls.carpet.fakefapi.PacketSender;
+import com.plusls.carpet.fakefapi.ServerPlayNetworking;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
@@ -34,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+@SuppressWarnings("unused")
 public class PcaSyncProtocol {
 
     // 发送包
@@ -93,10 +91,10 @@ public class PcaSyncProtocol {
 
 
     // 响应包
-    private static final Identifier SYNC_BLOCK_ENTITY = PcaMod.id("sync_block_entity");
-    private static final Identifier SYNC_ENTITY = PcaMod.id("sync_entity");
-    private static final Identifier CANCEL_SYNC_BLOCK_ENTITY = PcaMod.id("cancel_sync_block_entity");
-    private static final Identifier CANCEL_SYNC_ENTITY = PcaMod.id("cancel_sync_entity");
+    public static final Identifier SYNC_BLOCK_ENTITY = PcaMod.id("sync_block_entity");
+    public static final Identifier SYNC_ENTITY = PcaMod.id("sync_entity");
+    public static final Identifier CANCEL_SYNC_BLOCK_ENTITY = PcaMod.id("cancel_sync_block_entity");
+    public static final Identifier CANCEL_SYNC_ENTITY = PcaMod.id("cancel_sync_entity");
 
     private static final Map<ServerPlayerEntity, Pair<Identifier, BlockPos>> playerWatchBlockPos = new HashMap<>();
     private static final Map<ServerPlayerEntity, Pair<Identifier, Entity>> playerWatchEntity = new HashMap<>();
@@ -107,31 +105,32 @@ public class PcaSyncProtocol {
     public static final ReentrantLock lock = new ReentrantLock(true);
 
     public static void init() {
-        ServerPlayNetworking.registerGlobalReceiver(SYNC_BLOCK_ENTITY, PcaSyncProtocol::syncBlockEntityHandler);
-        ServerPlayNetworking.registerGlobalReceiver(SYNC_ENTITY, PcaSyncProtocol::syncEntityHandler);
-        ServerPlayNetworking.registerGlobalReceiver(CANCEL_SYNC_BLOCK_ENTITY, PcaSyncProtocol::cancelSyncBlockEntityHandler);
-        ServerPlayNetworking.registerGlobalReceiver(CANCEL_SYNC_ENTITY, PcaSyncProtocol::cancelSyncEntityHandler);
-        ServerPlayConnectionEvents.JOIN.register(PcaSyncProtocol::onJoin);
-        ServerPlayConnectionEvents.DISCONNECT.register(PcaSyncProtocol::onDisconnect);
+//        ServerPlayNetworking.registerGlobalReceiver(SYNC_BLOCK_ENTITY, PcaSyncProtocol::syncBlockEntityHandler);
+//        ServerPlayNetworking.registerGlobalReceiver(SYNC_ENTITY, PcaSyncProtocol::syncEntityHandler);
+//        ServerPlayNetworking.registerGlobalReceiver(CANCEL_SYNC_BLOCK_ENTITY, PcaSyncProtocol::cancelSyncBlockEntityHandler);
+//        ServerPlayNetworking.registerGlobalReceiver(CANCEL_SYNC_ENTITY, PcaSyncProtocol::cancelSyncEntityHandler);
+//        ServerPlayConnectionEvents.JOIN.register(PcaSyncProtocol::onJoin);
+//        ServerPlayConnectionEvents.DISCONNECT.register(PcaSyncProtocol::onDisconnect);
     }
 
-    private static void onDisconnect(ServerPlayNetworkHandler serverPlayNetworkHandler, MinecraftServer minecraftServer) {
+    public static void onDisconnect(ServerPlayNetworkHandler serverPlayNetworkHandler, MinecraftServer minecraftServer) {
         if (PcaSettings.pcaSyncProtocol) {
             PcaMod.LOGGER.debug("onDisconnect remove: {}", serverPlayNetworkHandler.player.getName().asString());
             lock.lock();
             playerSet.remove(serverPlayNetworkHandler.player);
             lock.unlock();
         }
+        PcaSyncProtocol.clearPlayerWatchData(serverPlayNetworkHandler.player);
     }
 
-    private static void onJoin(ServerPlayNetworkHandler serverPlayNetworkHandler, PacketSender packetSender, MinecraftServer minecraftServer) {
+    public static void onJoin(ServerPlayNetworkHandler serverPlayNetworkHandler, PacketSender packetSender, MinecraftServer minecraftServer) {
         if (PcaSettings.pcaSyncProtocol) {
             enablePcaSyncProtocol(serverPlayNetworkHandler.player);
         }
     }
 
     // 客户端通知服务端取消 BlockEntity 同步
-    private static void cancelSyncBlockEntityHandler(MinecraftServer server, ServerPlayerEntity player,
+    public static void cancelSyncBlockEntityHandler(MinecraftServer server, ServerPlayerEntity player,
                                                      ServerPlayNetworkHandler handler, PacketByteBuf buf,
                                                      PacketSender responseSender) {
         if (!PcaSettings.pcaSyncProtocol) {
@@ -142,7 +141,7 @@ public class PcaSyncProtocol {
     }
 
     // 客户端通知服务端取消 Entity 同步
-    private static void cancelSyncEntityHandler(MinecraftServer server, ServerPlayerEntity player,
+    public static void cancelSyncEntityHandler(MinecraftServer server, ServerPlayerEntity player,
                                                 ServerPlayNetworkHandler handler, PacketByteBuf buf,
                                                 PacketSender responseSender) {
         if (!PcaSettings.pcaSyncProtocol) {
@@ -155,7 +154,7 @@ public class PcaSyncProtocol {
     // 客户端请求同步 BlockEntity
     // 包内包含 pos
     // 由于正常的场景一般不会跨世界请求数据，因此包内并不包含 World，以玩家所在的 World 为准
-    private static void syncBlockEntityHandler(MinecraftServer server, ServerPlayerEntity player,
+    public static void syncBlockEntityHandler(MinecraftServer server, ServerPlayerEntity player,
                                                ServerPlayNetworkHandler handler, PacketByteBuf buf,
                                                PacketSender responseSender) {
         if (!PcaSettings.pcaSyncProtocol) {
@@ -200,7 +199,7 @@ public class PcaSyncProtocol {
     // 客户端请求同步 Entity
     // 包内包含 entityId
     // 由于正常的场景一般不会跨世界请求数据，因此包内并不包含 World，以玩家所在的 World 为准
-    private static void syncEntityHandler(MinecraftServer server, ServerPlayerEntity player,
+    public static void syncEntityHandler(MinecraftServer server, ServerPlayerEntity player,
                                           ServerPlayNetworkHandler handler, PacketByteBuf buf,
                                           PacketSender responseSender) {
         if (!PcaSettings.pcaSyncProtocol) {
@@ -213,31 +212,6 @@ public class PcaSyncProtocol {
             PcaMod.LOGGER.debug("Can't find entity {}.", entityId);
         } else {
             clearPlayerWatchData(player);
-            if (entity instanceof PlayerEntity) {
-                if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.NOBODY) {
-                    return;
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.BOT) {
-                    if (!(entity instanceof EntityPlayerMPFake)) {
-                        return;
-                    }
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.OPS) {
-                    if (!(entity instanceof EntityPlayerMPFake) && server.getPermissionLevel(player.getGameProfile()) < 2) {
-                        return;
-                    }
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.OPS_AND_SELF) {
-                    if (!(entity instanceof EntityPlayerMPFake) &&
-                            server.getPermissionLevel(player.getGameProfile()) < 2 &&
-                            entity != player) {
-                        return;
-                    }
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.EVERYONE) {
-
-                } else {
-                    // wtf????
-                    PcaMod.LOGGER.warn("syncEntityHandler wtf???");
-                    return;
-                }
-            }
             PcaMod.LOGGER.debug("{} watch entity {}: {}", player.getName().asString(), entityId, entity);
             updateEntity(player, entity);
 

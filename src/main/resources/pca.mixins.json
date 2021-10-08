@@ -4,16 +4,9 @@
   "package": "com.plusls.carpet.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "rule.avoidAnvilTooExpensive.MixinAnvilScreenHandler",
-    "rule.emptyShulkerBoxStack.MixinPlayerInventory",
-    "rule.emptyShulkerBoxStack.MixinScreenHandler",
-    "rule.emptyShulkerBoxStack.MixinSlot",
-    "rule.flippingTotemOfUndying.MixinBlockRotator",
-    "rule.gravestone.MixinPlayerSkullBlock",
-    "rule.gravestone.MixinSkullBlockEntity",
-    "rule.playerOperationLimiter.MixinBlockItem",
-    "rule.playerOperationLimiter.MixinServerPlayerEntity",
-    "rule.playerOperationLimiter.MixinServerPlayerInteractionManager",
+    "MinecraftServerMixin",
+    "PlayerManagerMixin",
+    "ServerPlayNetworkHandlerMixin",
     "rule.pcaSyncProtocol.block.MixinAbstractFurnaceBlockEntity",
     "rule.pcaSyncProtocol.block.MixinBarrelBlockEntity",
     "rule.pcaSyncProtocol.block.MixinBeehiveBlockEntity",
@@ -24,21 +17,9 @@
     "rule.pcaSyncProtocol.block.MixinShulkerBoxBlockEntity",
     "rule.pcaSyncProtocol.entity.MixinHorseBaseEntity",
     "rule.pcaSyncProtocol.entity.MixinMerchantEntity",
-    "rule.pcaSyncProtocol.entity.MixinStorageMinecartEntity",
-    "rule.powerBoneMeal.MixinBoneMealItem",
-    "rule.quickLeafDecay.MixinLeavesBlock",
-    "rule.sleepingDuringTheDay.MixinServerWorld",
-    "rule.spawnBiome.MixinSpawnHelper",
-    "rule.spawnYRange.MixinSpawnHelper",
-    "rule.superLead.MixinMerchantEntity",
-    "rule.superLead.MixinMobEntity",
-    "rule.useDyeOnShulkerBox.MixinDyeItem",
-    "rule.useDyeOnShulkerBox.MixinPotionItem",
-    "rule.villagersAttractedByEmeraldBlock.MixinVillagerEntity",
-    "rule.xaeroWorldName.MixinPlayerManager"
+    "rule.pcaSyncProtocol.entity.MixinStorageMinecartEntity"
   ],
   "client": [
-    "rule.avoidAnvilTooExpensive.MixinAnvilScreen"
   ],
   "injectors": {
     "defaultRequire": 1
