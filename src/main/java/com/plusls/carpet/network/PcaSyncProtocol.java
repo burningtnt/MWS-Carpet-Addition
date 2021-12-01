@@ -1,6 +1,5 @@
 package com.plusls.carpet.network;
 
-import carpet.patches.EntityPlayerMPFake;
 import com.plusls.carpet.ModInfo;
 import com.plusls.carpet.PcaMod;
 import com.plusls.carpet.PcaSettings;
@@ -44,10 +43,10 @@ public class PcaSyncProtocol {
     private static final Identifier UPDATE_ENTITY = ModInfo.id("update_entity");
     private static final Identifier UPDATE_BLOCK_ENTITY = ModInfo.id("update_block_entity");
     // 响应包
-    private static final Identifier SYNC_BLOCK_ENTITY = ModInfo.id("sync_block_entity");
-    private static final Identifier SYNC_ENTITY = ModInfo.id("sync_entity");
-    private static final Identifier CANCEL_SYNC_BLOCK_ENTITY = ModInfo.id("cancel_sync_block_entity");
-    private static final Identifier CANCEL_SYNC_ENTITY = ModInfo.id("cancel_sync_entity");
+    public static final Identifier SYNC_BLOCK_ENTITY = ModInfo.id("sync_block_entity");
+    public static final Identifier SYNC_ENTITY = ModInfo.id("sync_entity");
+    public static final Identifier CANCEL_SYNC_BLOCK_ENTITY = ModInfo.id("cancel_sync_block_entity");
+    public static final Identifier CANCEL_SYNC_ENTITY = ModInfo.id("cancel_sync_entity");
     private static final Map<ServerPlayerEntity, Pair<Identifier, BlockPos>> playerWatchBlockPos = new HashMap<>();
     private static final Map<ServerPlayerEntity, Pair<Identifier, Entity>> playerWatchEntity = new HashMap<>();
     private static final Map<Pair<Identifier, BlockPos>, Set<ServerPlayerEntity>> blockPosWatchPlayerSet = new HashMap<>();
@@ -213,32 +212,7 @@ public class PcaSyncProtocol {
             ModInfo.LOGGER.debug("Can't find entity {}.", entityId);
         } else {
             clearPlayerWatchData(player);
-            if (entity instanceof PlayerEntity) {
-                if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.NOBODY) {
-                    return;
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.BOT) {
-                    if (!(entity instanceof EntityPlayerMPFake)) {
-                        return;
-                    }
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.OPS) {
-                    if (!(entity instanceof EntityPlayerMPFake) && server.getPermissionLevel(player.getGameProfile()) < 2) {
-                        return;
-                    }
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.OPS_AND_SELF) {
-                    if (!(entity instanceof EntityPlayerMPFake) &&
-                            server.getPermissionLevel(player.getGameProfile()) < 2 &&
-                            entity != player) {
-                        return;
-                    }
-                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.EVERYONE) {
-
-                } else {
-                    // wtf????
-                    PcaMod.LOGGER.warn("syncEntityHandler wtf???");
-                    return;
-                }
-            }
-            PcaMod.LOGGER.debug("{} watch entity {}: {}", player.getName().asString(), entityId, entity);
+            ModInfo.LOGGER.debug("{} watch entity {}: {}", player.getName().asString(), entityId, entity);
             updateEntity(player, entity);
 
             Pair<Identifier, Entity> pair = new ImmutablePair<>(entity.getEntityWorld().getRegistryKey().getValue(), entity);
