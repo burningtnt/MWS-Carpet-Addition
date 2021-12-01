@@ -25,9 +25,9 @@ String getGitMetadata() {
     return ret
 }
 
-if (project.pre_release != "") {
-    real_version += "-${project.pre_release}+" + getGitMetadata()
-}
+//if (project.pre_release != "") {
+//    real_version += "-${project.pre_release}+" + getGitMetadata()
+//}
 
 version = "${project.minecraft_version}-${real_version}" as Object
 
