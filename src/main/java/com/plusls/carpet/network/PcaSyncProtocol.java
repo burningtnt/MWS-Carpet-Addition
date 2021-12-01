@@ -1,5 +1,7 @@
 package com.plusls.carpet.network;
 
+import carpet.patches.EntityPlayerMPFake;
+import com.plusls.carpet.ModInfo;
 import com.plusls.carpet.PcaMod;
 import com.plusls.carpet.PcaSettings;
 import com.plusls.carpet.fakefapi.PacketSender;
@@ -34,21 +36,35 @@ import java.util.concurrent.locks.ReentrantLock;
 @SuppressWarnings("unused")
 public class PcaSyncProtocol {
 
+    public static final ReentrantLock lock = new ReentrantLock(true);
+    public static final ReentrantLock pairLock = new ReentrantLock(true);
     // 发送包
-    private static final Identifier ENABLE_PCA_SYNC_PROTOCOL = PcaMod.id("enable_pca_sync_protocol");
-    private static final Identifier DISABLE_PCA_SYNC_PROTOCOL = PcaMod.id("disable_pca_sync_protocol");
-    private static final Identifier UPDATE_ENTITY = PcaMod.id("update_entity");
-    private static final Identifier UPDATE_BLOCK_ENTITY = PcaMod.id("update_block_entity");
+    private static final Identifier ENABLE_PCA_SYNC_PROTOCOL = ModInfo.id("enable_pca_sync_protocol");
+    private static final Identifier DISABLE_PCA_SYNC_PROTOCOL = ModInfo.id("disable_pca_sync_protocol");
+    private static final Identifier UPDATE_ENTITY = ModInfo.id("update_entity");
+    private static final Identifier UPDATE_BLOCK_ENTITY = ModInfo.id("update_block_entity");
+    // 响应包
+    private static final Identifier SYNC_BLOCK_ENTITY = ModInfo.id("sync_block_entity");
+    private static final Identifier SYNC_ENTITY = ModInfo.id("sync_entity");
+    private static final Identifier CANCEL_SYNC_BLOCK_ENTITY = ModInfo.id("cancel_sync_block_entity");
+    private static final Identifier CANCEL_SYNC_ENTITY = ModInfo.id("cancel_sync_entity");
+    private static final Map<ServerPlayerEntity, Pair<Identifier, BlockPos>> playerWatchBlockPos = new HashMap<>();
+    private static final Map<ServerPlayerEntity, Pair<Identifier, Entity>> playerWatchEntity = new HashMap<>();
+    private static final Map<Pair<Identifier, BlockPos>, Set<ServerPlayerEntity>> blockPosWatchPlayerSet = new HashMap<>();
+    private static final Map<Pair<Identifier, Entity>, Set<ServerPlayerEntity>> entityWatchPlayerSet = new HashMap<>();
+    private static final Set<ServerPlayerEntity> playerSet = new HashSet<>();
+    private static final MutablePair<Identifier, Entity> identifierEntityPair = new MutablePair<>();
+    private static final MutablePair<Identifier, BlockPos> identifierBlockPosPair = new MutablePair<>();
 
     // 通知客户端服务器已启用 PcaSyncProtocol
     public static void enablePcaSyncProtocol(@NotNull ServerPlayerEntity player) {
         // 在这写如果是在 BC 端的情况下，ServerPlayNetworking.canSend 在这个时机调用会出现错误
-        PcaMod.LOGGER.debug("Try enablePcaSyncProtocol: {}", player.getName().asString());
+        ModInfo.LOGGER.debug("Try enablePcaSyncProtocol: {}", player.getName().asString());
         // bc 端比较奇怪，canSend 工作不正常
         // if (ServerPlayNetworking.canSend(player, ENABLE_PCA_SYNC_PROTOCOL)) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         ServerPlayNetworking.send(player, ENABLE_PCA_SYNC_PROTOCOL, buf);
-        PcaMod.LOGGER.debug("send enablePcaSyncProtocol to {}!", player.getName().asString());
+        ModInfo.LOGGER.debug("send enablePcaSyncProtocol to {}!", player.getName().asString());
         lock.lock();
         lock.unlock();
     }
@@ -57,7 +73,7 @@ public class PcaSyncProtocol {
     public static void disablePcaSyncProtocol(@NotNull ServerPlayerEntity player) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         ServerPlayNetworking.send(player, DISABLE_PCA_SYNC_PROTOCOL, buf);
-        PcaMod.LOGGER.debug("send disablePcaSyncProtocol to {}!", player.getName().asString());
+        ModInfo.LOGGER.debug("send disablePcaSyncProtocol to {}!", player.getName().asString());
     }
 
     // 通知客户端更新 Entity
@@ -89,21 +105,6 @@ public class PcaSyncProtocol {
         ServerPlayNetworking.send(player, UPDATE_BLOCK_ENTITY, buf);
     }
 
-
-    // 响应包
-    public static final Identifier SYNC_BLOCK_ENTITY = PcaMod.id("sync_block_entity");
-    public static final Identifier SYNC_ENTITY = PcaMod.id("sync_entity");
-    public static final Identifier CANCEL_SYNC_BLOCK_ENTITY = PcaMod.id("cancel_sync_block_entity");
-    public static final Identifier CANCEL_SYNC_ENTITY = PcaMod.id("cancel_sync_entity");
-
-    private static final Map<ServerPlayerEntity, Pair<Identifier, BlockPos>> playerWatchBlockPos = new HashMap<>();
-    private static final Map<ServerPlayerEntity, Pair<Identifier, Entity>> playerWatchEntity = new HashMap<>();
-
-    private static final Map<Pair<Identifier, BlockPos>, Set<ServerPlayerEntity>> blockPosWatchPlayerSet = new HashMap<>();
-    private static final Map<Pair<Identifier, Entity>, Set<ServerPlayerEntity>> entityWatchPlayerSet = new HashMap<>();
-    private static final Set<ServerPlayerEntity> playerSet = new HashSet<>();
-    public static final ReentrantLock lock = new ReentrantLock(true);
-
     public static void init() {
 //        ServerPlayNetworking.registerGlobalReceiver(SYNC_BLOCK_ENTITY, PcaSyncProtocol::syncBlockEntityHandler);
 //        ServerPlayNetworking.registerGlobalReceiver(SYNC_ENTITY, PcaSyncProtocol::syncEntityHandler);
@@ -115,7 +116,7 @@ public class PcaSyncProtocol {
 
     public static void onDisconnect(ServerPlayNetworkHandler serverPlayNetworkHandler, MinecraftServer minecraftServer) {
         if (PcaSettings.pcaSyncProtocol) {
-            PcaMod.LOGGER.debug("onDisconnect remove: {}", serverPlayNetworkHandler.player.getName().asString());
+            ModInfo.LOGGER.debug("onDisconnect remove: {}", serverPlayNetworkHandler.player.getName().asString());
             lock.lock();
             playerSet.remove(serverPlayNetworkHandler.player);
             lock.unlock();
@@ -136,7 +137,7 @@ public class PcaSyncProtocol {
         if (!PcaSettings.pcaSyncProtocol) {
             return;
         }
-        PcaMod.LOGGER.debug("{} cancel watch blockEntity.", player.getName().asString());
+        ModInfo.LOGGER.debug("{} cancel watch blockEntity.", player.getName().asString());
         PcaSyncProtocol.clearPlayerWatchBlock(player);
     }
 
@@ -147,7 +148,7 @@ public class PcaSyncProtocol {
         if (!PcaSettings.pcaSyncProtocol) {
             return;
         }
-        PcaMod.LOGGER.debug("{} cancel watch entity.", player.getName().asString());
+        ModInfo.LOGGER.debug("{} cancel watch entity.", player.getName().asString());
         PcaSyncProtocol.clearPlayerWatchEntity(player);
     }
 
@@ -164,7 +165,7 @@ public class PcaSyncProtocol {
         ServerWorld world = player.getServerWorld();
         BlockState blockState = world.getBlockState(pos);
         clearPlayerWatchData(player);
-        PcaMod.LOGGER.debug("{} watch blockpos {}: {}", player.getName().asString(), pos, blockState);
+        ModInfo.LOGGER.debug("{} watch blockpos {}: {}", player.getName().asString(), pos, blockState);
 
         // 不是单个箱子则需要更新隔壁箱子
         if (blockState.getBlock() instanceof ChestBlock && blockState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE) {
@@ -209,9 +210,34 @@ public class PcaSyncProtocol {
         ServerWorld world = player.getServerWorld();
         Entity entity = world.getEntityById(entityId);
         if (entity == null) {
-            PcaMod.LOGGER.debug("Can't find entity {}.", entityId);
+            ModInfo.LOGGER.debug("Can't find entity {}.", entityId);
         } else {
             clearPlayerWatchData(player);
+            if (entity instanceof PlayerEntity) {
+                if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.NOBODY) {
+                    return;
+                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.BOT) {
+                    if (!(entity instanceof EntityPlayerMPFake)) {
+                        return;
+                    }
+                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.OPS) {
+                    if (!(entity instanceof EntityPlayerMPFake) && server.getPermissionLevel(player.getGameProfile()) < 2) {
+                        return;
+                    }
+                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.OPS_AND_SELF) {
+                    if (!(entity instanceof EntityPlayerMPFake) &&
+                            server.getPermissionLevel(player.getGameProfile()) < 2 &&
+                            entity != player) {
+                        return;
+                    }
+                } else if (PcaSettings.pcaSyncPlayerEntity == PcaSettings.PCA_SYNC_PLAYER_ENTITY_OPTIONS.EVERYONE) {
+
+                } else {
+                    // wtf????
+                    PcaMod.LOGGER.warn("syncEntityHandler wtf???");
+                    return;
+                }
+            }
             PcaMod.LOGGER.debug("{} watch entity {}: {}", player.getName().asString(), entityId, entity);
             updateEntity(player, entity);
 
@@ -226,10 +252,6 @@ public class PcaSyncProtocol {
             lock.unlock();
         }
     }
-
-    private static final MutablePair<Identifier, Entity> identifierEntityPair = new MutablePair<>();
-    private static final MutablePair<Identifier, BlockPos> identifierBlockPosPair = new MutablePair<>();
-    public static final ReentrantLock pairLock = new ReentrantLock(true);
 
     private static MutablePair<Identifier, Entity> getIdentifierEntityPair(Identifier identifier, Entity entity) {
         pairLock.lock();
