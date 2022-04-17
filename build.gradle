@@ -8,14 +8,14 @@ setSourceCompatibility(JavaVersion.toVersion(project.java_version))
 setTargetCompatibility(JavaVersion.toVersion(project.java_version))
 String real_version = "${project.mod_version}"
 
-if (project.pre_release as String != "") {
-    real_version += "-${project.pre_release}+"
-    if (project.pre_release as String == "alpha" && !grgit.status().clean) {
-        real_version += new Date().format("yyyyMMdd.HHmmss") + ".dirty." + grgit.head().abbreviatedId
-    } else {
-        real_version += grgit.head().abbreviatedId
-    }
-}
+//if (project.pre_release as String != "") {
+//    real_version += "-${project.pre_release}+"
+//    if (project.pre_release as String == "alpha" && !grgit.status().clean) {
+//        real_version += new Date().format("yyyyMMdd.HHmmss") + ".dirty." + grgit.head().abbreviatedId
+//    } else {
+//        real_version += grgit.head().abbreviatedId
+//    }
+//}
 
 setArchivesBaseName("${project.archives_base_name}-${project.minecraft_version}")
 setVersion(real_version)
