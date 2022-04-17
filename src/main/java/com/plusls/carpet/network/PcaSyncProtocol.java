@@ -5,6 +5,7 @@ import com.plusls.carpet.PcaMod;
 import com.plusls.carpet.PcaSettings;
 import com.plusls.carpet.fakefapi.PacketSender;
 import com.plusls.carpet.fakefapi.ServerPlayNetworking;
+import com.plusls.carpet.util.CarpetHelper;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
@@ -173,7 +174,7 @@ public class PcaSyncProtocol {
                 // The method in World now checks that the caller is from the same thread...
                 blockEntityAdj = world.getWorldChunk(posAdj).getBlockEntity(posAdj);
             }
-        } else if (PcaMod.tisCarpetLoaded && blockState.isOf(Blocks.BARREL) && CarpetServer.settingsManager.getRule("largeBarrel").getBoolValue()) {
+        } else if (blockState.isOf(Blocks.BARREL) && CarpetHelper.getBoolRuleValue("largeBarrel")) {
             Direction directionOpposite = blockState.get(BarrelBlock.FACING).getOpposite();
             BlockPos posAdj = pos.offset(directionOpposite);
             BlockState blockStateAdj = world.getBlockState(posAdj);
@@ -299,7 +300,7 @@ public class PcaSyncProtocol {
                     BlockPos posAdj = pos.offset(ChestBlock.getFacing(blockState));
                     playerListAdj = getWatchPlayerList(world, posAdj);
                 }
-            } else if (PcaMod.tisCarpetLoaded && blockState.isOf(Blocks.BARREL) && CarpetServer.settingsManager.getRule("largeBarrel").getBoolValue()) {
+            } else if (blockState.isOf(Blocks.BARREL) && CarpetHelper.getBoolRuleValue("largeBarrel")) {
                 Direction directionOpposite = blockState.get(BarrelBlock.FACING).getOpposite();
                 BlockPos posAdj = pos.offset(directionOpposite);
                 BlockState blockStateAdj = world.getBlockState(posAdj);
