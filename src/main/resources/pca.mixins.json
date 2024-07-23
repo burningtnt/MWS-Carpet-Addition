@@ -1,26 +1,24 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.plusls.carpet.mixin",
+  "package": "net.burningtnt.pca.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "MinecraftServerMixin",
     "PlayerManagerMixin",
     "ServerPlayNetworkHandlerMixin",
-    "rule.pcaSyncProtocol.block.MixinAbstractFurnaceBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinBarrelBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinBeehiveBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinBrewingStandBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinChestBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinComparatorBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinDispenserBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinHopperBlockEntity",
-    "rule.pcaSyncProtocol.block.MixinShulkerBoxBlockEntity",
-    "rule.pcaSyncProtocol.entity.MixinHorseBaseEntity",
-    "rule.pcaSyncProtocol.entity.MixinMerchantEntity",
-    "rule.pcaSyncProtocol.entity.MixinStorageMinecartEntity"
-  ],
-  "client": [
+    "pcaSyncProtocol.block.MixinAbstractFurnaceBlockEntity",
+    "pcaSyncProtocol.block.MixinBarrelBlockEntity",
+    "pcaSyncProtocol.block.MixinBeehiveBlockEntity",
+    "pcaSyncProtocol.block.MixinBrewingStandBlockEntity",
+    "pcaSyncProtocol.block.MixinChestBlockEntity",
+    "pcaSyncProtocol.block.MixinComparatorBlockEntity",
+    "pcaSyncProtocol.block.MixinDispenserBlockEntity",
+    "pcaSyncProtocol.block.MixinHopperBlockEntity",
+    "pcaSyncProtocol.block.MixinShulkerBoxBlockEntity",
+    "pcaSyncProtocol.entity.MixinHorseBaseEntity",
+    "pcaSyncProtocol.entity.MixinMerchantEntity",
+    "pcaSyncProtocol.entity.MixinStorageMinecartEntity"
   ],
   "injectors": {
     "defaultRequire": 1
