@@ -311,7 +311,7 @@ public class PCASyncProtocol {
         lock.unlock();
 
         MinecraftServer s = server;
-        if (s != null) {
+        if (s != null && s.isRunning()) {
             for (ServerPlayerEntity player : s.getPlayerManager().getPlayerList()) {
                 disablePcaSyncProtocol(player);
             }
@@ -320,7 +320,7 @@ public class PCASyncProtocol {
 
     public static void enablePcaSyncProtocolGlobal() {
         MinecraftServer s = server;
-        if (s == null) {
+        if (s == null && s.isRunning()) {
             return;
         }
         for (ServerPlayerEntity player : s.getPlayerManager().getPlayerList()) {
