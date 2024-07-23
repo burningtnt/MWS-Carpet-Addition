@@ -44,6 +44,9 @@ public class PCASyncProtocol {
     private static final MutablePair<Identifier, Entity> identifierEntityPair = new MutablePair<>();
     private static final MutablePair<Identifier, BlockPos> identifierBlockPosPair = new MutablePair<>();
 
+    @Nullable
+    public static volatile MinecraftServer server = null;
+
     public static void enablePcaSyncProtocol(@NotNull ServerPlayerEntity player) {
         PcaMod.LOGGER.debug("Sending enablePcaSyncProtocol to player: {}", player.getName().getString());
 
@@ -81,20 +84,20 @@ public class PCASyncProtocol {
         NetworkingHandle.send(player, ProtocolConstants.UPDATE_BLOCK_ENTITY, buf);
     }
 
-    public static void onDisconnect(ServerPlayNetworkHandler serverPlayNetworkHandler, MinecraftServer minecraftServer) {
+    public static void onDisconnect(ServerPlayNetworkHandler serverPlayNetworkHandler) {
         if (PcaMod.pcaSyncProtocol) {
             PcaMod.LOGGER.debug("onDisconnect remove: {}", serverPlayNetworkHandler.player.getName().getString());
         }
         PCASyncProtocol.clearPlayerWatchData(serverPlayNetworkHandler.player);
     }
 
-    public static void onJoin(ServerPlayNetworkHandler serverPlayNetworkHandler, MinecraftServer minecraftServer) {
+    public static void onJoin(ServerPlayNetworkHandler serverPlayNetworkHandler) {
         if (PcaMod.pcaSyncProtocol) {
             enablePcaSyncProtocol(serverPlayNetworkHandler.player);
         }
     }
 
-    public static void cancelSyncBlockEntityHandler(ServerPlayerEntity player, PacketByteBuf buf) {
+    public static void cancelSyncBlockEntityHandler(ServerPlayerEntity player) {
         if (!PcaMod.pcaSyncProtocol) {
             return;
         }
@@ -102,7 +105,7 @@ public class PCASyncProtocol {
         PCASyncProtocol.clearPlayerWatchBlock(player);
     }
 
-    public static void cancelSyncEntityHandler(ServerPlayerEntity player, PacketByteBuf buf) {
+    public static void cancelSyncEntityHandler(ServerPlayerEntity player) {
         if (!PcaMod.pcaSyncProtocol) {
             return;
         }
@@ -306,18 +309,21 @@ public class PCASyncProtocol {
         blockPosWatchPlayerSet.clear();
         entityWatchPlayerSet.clear();
         lock.unlock();
-        if (PcaMod.server != null) {
-            for (ServerPlayerEntity player : PcaMod.server.getPlayerManager().getPlayerList()) {
+
+        MinecraftServer s = server;
+        if (s != null) {
+            for (ServerPlayerEntity player : s.getPlayerManager().getPlayerList()) {
                 disablePcaSyncProtocol(player);
             }
         }
     }
 
     public static void enablePcaSyncProtocolGlobal() {
-        if (PcaMod.server == null) {
+        MinecraftServer s = server;
+        if (s == null) {
             return;
         }
-        for (ServerPlayerEntity player : PcaMod.server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayerEntity player : s.getPlayerManager().getPlayerList()) {
             enablePcaSyncProtocol(player);
         }
     }

@@ -1,6 +1,6 @@
 package net.burningtnt.pca.mixin;
 
-import net.burningtnt.pca.PcaMod;
+import net.burningtnt.pca.PCASyncProtocol;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +13,6 @@ public abstract class MinecraftServerMixin
     @Inject(method = "<init>", at = @At("TAIL"))
     private void onGameInit(CallbackInfo ci)
     {
-        PcaMod.init((MinecraftServer)(Object)this);
+        PCASyncProtocol.server = (MinecraftServer)(Object) this;
     }
 }

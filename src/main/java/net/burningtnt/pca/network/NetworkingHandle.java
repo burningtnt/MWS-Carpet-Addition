@@ -73,10 +73,10 @@ public final class NetworkingHandle {
             PCASyncProtocol.syncEntityHandler(player, buf);
         }
         if (identifier.equals(ProtocolConstants.CANCEL_SYNC_BLOCK_ENTITY)) {
-            PCASyncProtocol.cancelSyncBlockEntityHandler(player, buf);
+            PCASyncProtocol.cancelSyncBlockEntityHandler(player);
         }
         if (identifier.equals(ProtocolConstants.CANCEL_SYNC_ENTITY)) {
-            PCASyncProtocol.cancelSyncEntityHandler(player, buf);
+            PCASyncProtocol.cancelSyncEntityHandler(player);
         }
     }
 }

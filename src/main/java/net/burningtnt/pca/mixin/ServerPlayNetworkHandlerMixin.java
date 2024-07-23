@@ -20,6 +20,6 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     @Inject(method = "onDisconnected", at = @At("HEAD"))
     private void handleDisconnection(CallbackInfo ci)
     {
-        PCASyncProtocol.onDisconnect((ServerPlayNetworkHandler)(Object)this, this.server);
+        PCASyncProtocol.onDisconnect((ServerPlayNetworkHandler)(Object)this);
     }
 }

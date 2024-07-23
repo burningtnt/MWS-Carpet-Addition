@@ -22,6 +22,6 @@ public abstract class PlayerManagerMixin
     @Inject(method = "onPlayerConnect", at = @At("TAIL"))
     private void handleDisconnection(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci)
     {
-        PCASyncProtocol.onJoin(player.networkHandler, this.server);
+        PCASyncProtocol.onJoin(player.networkHandler);
     }
 }
