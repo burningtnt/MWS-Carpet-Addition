@@ -1,8 +1,7 @@
 package net.burningtnt.pca.network;
 
 import io.netty.buffer.ByteBuf;
-import net.burningtnt.pca.PCASyncProtocol;
-import net.burningtnt.pca.protocol.ProtocolConstants;
+import net.burningtnt.pca.PCAMod;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
@@ -19,64 +18,77 @@ public final class NetworkingHandle {
     private NetworkingHandle() {
     }
 
-    private static final Map<Identifier, CustomPayload.Id<PCAPayload>> PAYLOAD_ID = new ConcurrentHashMap<>();
+    private record PacketObject(
+            Identifier identifier,
+            CustomPayload.Id<LegacyByteBufferPayload> payloadID,
+            PacketCodec<ByteBuf, LegacyByteBufferPayload> codec,
+            PacketReceiver receiver
+    ) {
+        private static final Map<Identifier, PacketObject> PACKETS = new ConcurrentHashMap<>();
 
-    private static final Map<Identifier, PacketCodec<ByteBuf, PCAPayload>> CODEC_MAP = new ConcurrentHashMap<>();
+        private PacketObject(Identifier identifier, PacketReceiver receiver) {
+            this(identifier, new CustomPayload.Id<>(identifier), new PacketCodec<>() {
+                @Override
+                public LegacyByteBufferPayload decode(ByteBuf byteBuf) {
+                    ByteBuf data = byteBuf.alloc().buffer(byteBuf.readableBytes());
+                    byteBuf.readBytes(data);
 
-    public static CustomPayload.Id<PCAPayload> ofPayloadID(Identifier identifier) {
-        return PAYLOAD_ID.computeIfAbsent(identifier, CustomPayload.Id::new);
-    }
+                    return new LegacyByteBufferPayload(identifier, data);
+                }
 
-    private static PacketCodec<ByteBuf, PCAPayload> ofCodec(Identifier id) {
-        return CODEC_MAP.computeIfAbsent(id, identifier -> new PacketCodec<>() {
-            @Override
-            public PCAPayload decode(ByteBuf byteBuf) {
-                ByteBuf data = byteBuf.alloc().buffer(byteBuf.readableBytes());
-                byteBuf.readBytes(data);
+                @Override
+                public void encode(ByteBuf byteBuf, LegacyByteBufferPayload value) {
+                    byteBuf.writeBytes(value.buf());
+                }
+            }, receiver);
+        }
 
-                return new PCAPayload(identifier, new PacketByteBuf(data));
+        public static PacketObject register(Identifier identifier, PacketReceiver receiver) {
+            PacketObject value = new PacketObject(identifier, receiver);
+            if (PACKETS.putIfAbsent(identifier, value) != null) {
+                PCAMod.LOGGER.warn(String.format("Cannot register packet %s.", identifier), new IllegalStateException(String.format("Packet %s has been registered twice.", identifier)));
+                return null;
             }
+            return value;
+        }
+    }
 
-            @Override
-            public void encode(ByteBuf byteBuf, PCAPayload value) {
-                byteBuf.writeBytes(value.buf());
+    private record LegacyByteBufferPayload(Identifier identifier, ByteBuf buf) implements CustomPayload {
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            PacketObject value = PacketObject.PACKETS.get(identifier);
+            if (value == null) {
+                throw new IllegalArgumentException(String.format("Packet %s hasn't been registered.", identifier));
             }
-        });
-    }
-
-    public static void register() {
-        for (Identifier identifier : ProtocolConstants.S2C_PACKAGES) {
-            PayloadTypeRegistry.playS2C().register(ofPayloadID(identifier), ofCodec(identifier));
-        }
-
-        for (Identifier identifier : ProtocolConstants.C2S_PACKAGES) {
-            PayloadTypeRegistry.playC2S().register(ofPayloadID(identifier), ofCodec(identifier));
-        }
-
-        for (Identifier identifier : ProtocolConstants.C2S_PACKAGES) {
-            ServerPlayNetworking.registerGlobalReceiver(
-                    ofPayloadID(identifier),
-                    (payload, context) -> context.server().execute(() -> receive(context.player(), payload.identifier(), payload.buf()))
-            );
+            return value.payloadID();
         }
     }
 
-    public static void send(ServerPlayerEntity player, Identifier identifier, PacketByteBuf buf) {
-        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(new PCAPayload(identifier, buf)));
+    public static void register(Identifier identifier, PacketState state, PacketReceiver receiver) {
+        boolean clientSide = state.isClientSide(), serverSide = state.isServerSide();
+
+        if (serverSide && receiver == null) {
+            throw new IllegalArgumentException("S2C or BOTH packets should provide a receiver.");
+        }
+
+        PacketObject packet = PacketObject.register(identifier, receiver);
+        if (packet == null) {
+            return;
+        }
+
+        if (serverSide) {
+            PayloadTypeRegistry.playC2S().register(packet.payloadID(), packet.codec());
+            ServerPlayNetworking.registerGlobalReceiver(packet.payloadID(), (payload, context) -> context.server().execute(() -> {
+                packet.receiver().handle(context.server(), context.player(), context.responseSender(), new PacketByteBuf(payload.buf()));
+            }));
+        }
+
+        if (clientSide) {
+            PayloadTypeRegistry.playS2C().register(packet.payloadID(), packet.codec());
+        }
     }
 
-    public static void receive(ServerPlayerEntity player, Identifier identifier, PacketByteBuf buf) {
-        if (identifier.equals(ProtocolConstants.SYNC_BLOCK_ENTITY)) {
-            PCASyncProtocol.syncBlockEntity(player, buf);
-        }
-        if (identifier.equals(ProtocolConstants.SYNC_ENTITY)) {
-            PCASyncProtocol.syncEntityHandler(player, buf);
-        }
-        if (identifier.equals(ProtocolConstants.CANCEL_SYNC_BLOCK_ENTITY)) {
-            PCASyncProtocol.cancelSyncBlockEntityHandler(player);
-        }
-        if (identifier.equals(ProtocolConstants.CANCEL_SYNC_ENTITY)) {
-            PCASyncProtocol.cancelSyncEntityHandler(player);
-        }
+    public static void send(ServerPlayerEntity player, Identifier identifier, ByteBuf buf) {
+        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(new LegacyByteBufferPayload(identifier, buf)));
     }
 }

@@ -1,7 +1,7 @@
-package net.burningtnt.pca.mixin.pcaSyncProtocol.entity;
+package net.burningtnt.pca.mixin.entity;
 
-import net.burningtnt.pca.PcaMod;
-import net.burningtnt.pca.PCASyncProtocol;
+import net.burningtnt.pca.PCAMod;
+import net.burningtnt.pca.protocol.Protocol;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.JumpingMount;
 import net.minecraft.entity.Saddleable;
@@ -23,8 +23,8 @@ public abstract class MixinHorseBaseEntity extends AnimalEntity implements Inven
 
     @Inject(method = "onInventoryChanged", at = @At(value = "HEAD"))
     private void updateEntity(Inventory sender, CallbackInfo ci) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncEntityToClient(this)) {
-            PcaMod.LOGGER.debug("update HorseBaseEntity inventory: onInventoryChanged.");
+        if (PCAMod.pcaSyncProtocol && Protocol.H_ENTITY.tickTarget(this)) {
+            PCAMod.LOGGER.debug("update HorseBaseEntity inventory: onInventoryChanged.");
         }
     }
 }

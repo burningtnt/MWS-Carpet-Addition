@@ -1,7 +1,7 @@
-package net.burningtnt.pca.mixin.pcaSyncProtocol.entity;
+package net.burningtnt.pca.mixin.entity;
 
-import net.burningtnt.pca.PcaMod;
-import net.burningtnt.pca.PCASyncProtocol;
+import net.burningtnt.pca.PCAMod;
+import net.burningtnt.pca.protocol.Protocol;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Npc;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -40,8 +40,8 @@ public abstract class MixinMerchantEntity extends PassiveEntity implements Npc, 
 
     @Override
     public void onInventoryChanged(Inventory inventory) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncEntityToClient(this)) {
-            PcaMod.LOGGER.debug("update villager inventory: onInventoryChanged.");
+        if (PCAMod.pcaSyncProtocol && Protocol.H_ENTITY.tickTarget(this)) {
+            PCAMod.LOGGER.debug("update villager inventory: onInventoryChanged.");
         }
     }
 }

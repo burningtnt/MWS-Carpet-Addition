@@ -1,7 +1,7 @@
-package net.burningtnt.pca.mixin.pcaSyncProtocol.entity;
+package net.burningtnt.pca.mixin.entity;
 
-import net.burningtnt.pca.PcaMod;
-import net.burningtnt.pca.PCASyncProtocol;
+import net.burningtnt.pca.PCAMod;
+import net.burningtnt.pca.protocol.Protocol;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.entity.vehicle.StorageMinecartEntity;
@@ -21,8 +21,8 @@ public abstract class MixinStorageMinecartEntity extends AbstractMinecartEntity 
 
     @Inject(method = "markDirty", at = @At(value = "RETURN"))
     private void updateInventory(CallbackInfo ci) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncEntityToClient(this)) {
-            PcaMod.LOGGER.debug("update StorageMinecartEntity inventory.");
+        if (PCAMod.pcaSyncProtocol && Protocol.H_ENTITY.tickTarget(this)) {
+            PCAMod.LOGGER.debug("update StorageMinecartEntity inventory.");
         }
     }
 }

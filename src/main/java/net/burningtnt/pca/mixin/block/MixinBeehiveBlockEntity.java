@@ -1,7 +1,7 @@
-package net.burningtnt.pca.mixin.pcaSyncProtocol.block;
+package net.burningtnt.pca.mixin.block;
 
-import net.burningtnt.pca.PcaMod;
-import net.burningtnt.pca.PCASyncProtocol;
+import net.burningtnt.pca.PCAMod;
+import net.burningtnt.pca.protocol.Protocol;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
@@ -22,37 +22,36 @@ import java.util.Objects;
 
 @Mixin(BeehiveBlockEntity.class)
 public abstract class MixinBeehiveBlockEntity extends BlockEntity {
-
     public MixinBeehiveBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Inject(method = "tickBees", at = @At(value = "INVOKE", target = "Ljava/util/Iterator;remove()V", shift = At.Shift.AFTER))
     private static void postTickBees(World world, BlockPos pos, BlockState state, List<BeehiveBlockEntity.Bee> bees, BlockPos flowerPos, CallbackInfo ci) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncBlockEntityToClient(Objects.requireNonNull(world.getBlockEntity(pos)))) {
-            PcaMod.LOGGER.debug("update BeehiveBlockEntity: {}", pos);
+        if (PCAMod.pcaSyncProtocol && Protocol.H_BE.tickTarget(Objects.requireNonNull(world.getBlockEntity(pos)))) {
+            PCAMod.LOGGER.debug("update BeehiveBlockEntity: {}", pos);
         }
     }
 
     @Inject(method = "tryReleaseBee", at = @At(value = "RETURN"))
     public void postTryReleaseBee(BlockState state, BeehiveBlockEntity.BeeState beeState, CallbackInfoReturnable<List<Entity>> cir) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncBlockEntityToClient(this) && cir.getReturnValue() != null) {
-            PcaMod.LOGGER.debug("update BeehiveBlockEntity: {}", this.pos);
+        if (PCAMod.pcaSyncProtocol && Protocol.H_BE.tickTarget(this) && cir.getReturnValue() != null) {
+            PCAMod.LOGGER.debug("update BeehiveBlockEntity: {}", this.pos);
         }
     }
 
     @Inject(method = "readNbt", at = @At(value = "RETURN"))
     public void postFromTag(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncBlockEntityToClient(this)) {
-            PcaMod.LOGGER.debug("update BeehiveBlockEntity: {}", this.pos);
+        if (PCAMod.pcaSyncProtocol && Protocol.H_BE.tickTarget(this)) {
+            PCAMod.LOGGER.debug("update BeehiveBlockEntity: {}", this.pos);
         }
     }
 
     @Inject(method = "tryEnterHive(Lnet/minecraft/entity/Entity;)V", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/Entity;discard()V", ordinal = 0))
     public void postEnterHive(Entity entity, CallbackInfo ci) {
-        if (PcaMod.pcaSyncProtocol && PCASyncProtocol.syncBlockEntityToClient(this)) {
-            PcaMod.LOGGER.debug("update BeehiveBlockEntity: {}", this.pos);
+        if (PCAMod.pcaSyncProtocol && Protocol.H_BE.tickTarget(this)) {
+            PCAMod.LOGGER.debug("update BeehiveBlockEntity: {}", this.pos);
         }
     }
 }

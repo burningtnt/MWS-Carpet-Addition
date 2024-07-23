@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.burningtnt.pca.PcaMod"
+      "net.burningtnt.pca.PCAMod"
     ]
   },
   "mixins": [
