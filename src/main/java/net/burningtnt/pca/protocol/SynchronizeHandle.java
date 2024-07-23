@@ -47,7 +47,7 @@ public abstract class SynchronizeHandle<T> {
         }
     }
 
-    public void stopSync(ServerPlayerEntity player) {
+    private void stopSync(ServerPlayerEntity player) {
         removeWatchers(player, currentTargets.remove(player));
     }
 
