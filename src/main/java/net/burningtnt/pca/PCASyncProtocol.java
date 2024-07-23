@@ -320,11 +320,10 @@ public class PCASyncProtocol {
 
     public static void enablePcaSyncProtocolGlobal() {
         MinecraftServer s = server;
-        if (s == null && s.isRunning()) {
-            return;
-        }
-        for (ServerPlayerEntity player : s.getPlayerManager().getPlayerList()) {
-            enablePcaSyncProtocol(player);
+        if (s != null && s.isRunning()) {
+            for (ServerPlayerEntity player : s.getPlayerManager().getPlayerList()) {
+                enablePcaSyncProtocol(player);
+            }
         }
     }
 
