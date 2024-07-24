@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.burningtnt.mca.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "pca.block.MixinAbstractFurnaceBlockEntity",
+    "pca.block.MixinBarrelBlockEntity",
+    "pca.block.MixinBeehiveBlockEntity",
+    "pca.block.MixinBrewingStandBlockEntity",
+    "pca.block.MixinChestBlockEntity",
+    "pca.block.MixinComparatorBlockEntity",
+    "pca.block.MixinDispenserBlockEntity",
+    "pca.block.MixinHopperBlockEntity",
+    "pca.block.MixinShulkerBoxBlockEntity",
+    "pca.entity.MixinHorseBaseEntity",
+    "pca.entity.MixinMerchantEntity",
+    "pca.entity.MixinStorageMinecartEntity",
+    "lsb.HopperBlockEntityMixin",
+    "lsb.ScreenHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

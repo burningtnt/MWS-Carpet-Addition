@@ -1,28 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "pca-protocol",
+  "id": "mws-carpet-addition",
   "version": "${version}",
-  "name": "pca protocol",
-  "description": "Adds PCA protocol support to the server",
+  "name": "MWS Carpet Addition",
+  "description": "MWS's Carpet Addition",
   "authors": [
     "plusls", "Fallen_Breath", "Burning_TNT"
   ],
   "contact": {
-    "homepage": "https://github.com/burningtnt/pca-protocol",
-    "sources": "https://github.com/burningtnt/pca-protocol"
+    "homepage": "https://github.com/burningtnt/MWS-Carpet-Addition",
+    "sources": "https://github.com/burningtnt/MWS-Carpet-Addition"
   },
   "license": "CC0-1.0",
-  "icon": "assets/pca/icon.png",
+  "icon": "assets/mws-carpet-addition/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.burningtnt.pca.PCAMod"
+      "net.burningtnt.mca.MWSCarpetAddition"
     ]
   },
   "mixins": [
-    "pca.mixins.json"
+    "mws-carpet-addition.mixins.json"
   ],
-  "accessWidener": "pca.accesswidener",
+  "accessWidener": "mws-carpet-addition.accesswidener",
   "depends": {
     "fabricloader": ">=0.15.11",
     "minecraft": "1.21",
