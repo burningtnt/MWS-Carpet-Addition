@@ -45,6 +45,13 @@ public abstract class SynchronizeHandle<T> {
         for (T target : targets) {
             currentWatchers.computeIfAbsent(target, k -> new HashSet<>()).add(player);
         }
+
+        for (T target : targets) {
+            PacketByteBuf buf2 = new PacketByteBuf(Unpooled.buffer());
+            if (encodeTarget(buf2, target)) {
+                NetworkingHandle.send(player, dataPacketID, buf2);
+            }
+        }
     }
 
     private void stopSync(ServerPlayerEntity player) {

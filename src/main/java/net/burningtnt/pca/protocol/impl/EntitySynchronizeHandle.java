@@ -25,7 +25,7 @@ public final class EntitySynchronizeHandle extends SynchronizeHandle<Entity> {
     @Override
     public boolean encodeTarget(PacketByteBuf buf, Entity entity) {
         World world = entity.getWorld();
-        if (world == null) {
+        if (world == null || world.isClient) {
             return false;
         }
 

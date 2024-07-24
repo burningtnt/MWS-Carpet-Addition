@@ -57,7 +57,7 @@ public final class BlockEntitySynchronizeHandle extends SynchronizeHandle<BlockE
     @Override
     public boolean encodeTarget(PacketByteBuf buf, BlockEntity blockEntity) {
         World world = blockEntity.getWorld();
-        if (world == null) {
+        if (world == null || world.isClient) {
             return false;
         }
 
