@@ -1,6 +1,7 @@
-package net.burningtnt.mca.pca;
+package net.burningtnt.mca.impl.pcaSyncProtocol;
 
 import io.netty.buffer.Unpooled;
+import net.burningtnt.mca.carpet.MWSCarpetSettings;
 import net.burningtnt.mca.network.NetworkingHandle;
 import net.burningtnt.mca.network.PacketState;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -41,9 +42,23 @@ public abstract class AbstractPCASynchronizeHandle<T> {
         NetworkingHandle.register(dataPacketID, PacketState.S2C, null);
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, s) -> stopSync(handler.player));
+
+        MWSCarpetSettings.registerListener("pcaSyncProtocol", server -> {
+            if (MWSCarpetSettings.pcaSyncProtocol) {
+                return;
+            }
+
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                stopSync(player);
+            }
+        });
     }
 
     private void startSync(ServerPlayerEntity player, PacketByteBuf buf) {
+        if (!MWSCarpetSettings.pcaSyncProtocol) {
+            return;
+        }
+
         T[] targets = locateTargets(player, buf);
         removeWatchers(player, currentTargets.put(player, targets));
 
@@ -82,6 +97,10 @@ public abstract class AbstractPCASynchronizeHandle<T> {
     }
 
     public final void tickTarget(T target) {
+        if (!MWSCarpetSettings.pcaSyncProtocol) {
+            return;
+        }
+
         Set<ServerPlayerEntity> watchers = currentWatchers.get(target);
         if (watchers == null) {
             return;

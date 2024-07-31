@@ -1,7 +1,7 @@
 package net.burningtnt.mca;
 
 import net.burningtnt.mca.carpet.MWSCarpetExtension;
-import net.burningtnt.mca.pca.PCAProtocol;
+import net.burningtnt.mca.impl.pcaSyncProtocol.PCAProtocol;
 import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

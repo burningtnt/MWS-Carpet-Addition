@@ -1,6 +1,7 @@
 package net.burningtnt.mca.network;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
@@ -87,6 +88,8 @@ public final class NetworkingHandle {
             PayloadTypeRegistry.playS2C().register(payloadID, codec);
         }
     }
+
+    public static final ByteBuf NULL_BUFFER = Unpooled.buffer(0, 0);
 
     public static void send(ServerPlayerEntity player, Identifier identifier, ByteBuf buf) {
         LegacyPacket packet = LegacyPacket.get(identifier);

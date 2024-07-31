@@ -1,7 +1,9 @@
-package net.burningtnt.mca.pca.impl;
+package net.burningtnt.mca.impl.pcaSyncProtocol.impl;
 
-import net.burningtnt.mca.pca.PCAProtocol;
-import net.burningtnt.mca.pca.AbstractPCASynchronizeHandle;
+import carpet.CarpetServer;
+import carpet.api.settings.CarpetRule;
+import net.burningtnt.mca.impl.pcaSyncProtocol.PCAProtocol;
+import net.burningtnt.mca.impl.pcaSyncProtocol.AbstractPCASynchronizeHandle;
 import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -37,7 +39,7 @@ public final class BlockEntityPCASynchronizeHandle extends AbstractPCASynchroniz
                 BlockPos pos2 = pos.offset(ChestBlock.getFacing(blockState));
                 target2 = world.getWorldChunk(pos2).getBlockEntity(pos2);
             }
-        } else if (blockState.isOf(Blocks.BARREL) && PCAProtocol.shouldEnableLargeBarrel()) {
+        } else if (blockState.isOf(Blocks.BARREL) && shouldEnableLargeBarrel()) {
             Direction direction = blockState.get(BarrelBlock.FACING).getOpposite();
             BlockPos pos2 = pos.offset(direction);
             BlockState blockState2 = world.getBlockState(pos2);
@@ -64,5 +66,14 @@ public final class BlockEntityPCASynchronizeHandle extends AbstractPCASynchroniz
         buf.writeBlockPos(blockEntity.getPos());
         buf.writeNbt(blockEntity.createComponentlessNbt(world.getRegistryManager()));
         return true;
+    }
+
+    private static boolean shouldEnableLargeBarrel() {
+        CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule("largeBarrel");
+        if (rule == null) {
+            return false;
+        }
+
+        return (boolean) rule.value();
     }
 }

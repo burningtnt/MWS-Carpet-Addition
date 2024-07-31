@@ -15,13 +15,11 @@ public final class MWSCarpetExtension implements CarpetExtension {
 
     @Override
     public void onGameStarted() {
-        CarpetServer.settingsManager.parseSettingsClass(MWSCarpetSettings.class);
+        MWSCarpetSettings.initialize();
     }
 
     @Override
     public Map<String, String> canHasTranslations(String lang) {
-        return Map.of(
-                "carpet.rule.legacyStackableShulkerBoxes.desc", "Use legacy implementation, which would not let hoppers stack shulker boxs and comparators would output like the way in vanilla Minecraft."
-        );
+        return MWSCarpetSettings.TRANSLATION_MAP;
     }
 }

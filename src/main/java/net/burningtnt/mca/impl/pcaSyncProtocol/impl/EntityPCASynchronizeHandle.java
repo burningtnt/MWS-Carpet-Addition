@@ -1,7 +1,7 @@
-package net.burningtnt.mca.pca.impl;
+package net.burningtnt.mca.impl.pcaSyncProtocol.impl;
 
-import net.burningtnt.mca.pca.PCAProtocol;
-import net.burningtnt.mca.pca.AbstractPCASynchronizeHandle;
+import net.burningtnt.mca.impl.pcaSyncProtocol.PCAProtocol;
+import net.burningtnt.mca.impl.pcaSyncProtocol.AbstractPCASynchronizeHandle;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;

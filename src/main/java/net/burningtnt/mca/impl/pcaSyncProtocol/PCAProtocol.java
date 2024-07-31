@@ -1,16 +1,13 @@
-package net.burningtnt.mca.pca;
+package net.burningtnt.mca.impl.pcaSyncProtocol;
 
-import carpet.CarpetServer;
-import io.netty.buffer.Unpooled;
+import net.burningtnt.mca.carpet.MWSCarpetSettings;
 import net.burningtnt.mca.network.NetworkingHandle;
 import net.burningtnt.mca.network.PacketState;
-import net.burningtnt.mca.pca.impl.BlockEntityPCASynchronizeHandle;
-import net.burningtnt.mca.pca.impl.EntityPCASynchronizeHandle;
+import net.burningtnt.mca.impl.pcaSyncProtocol.impl.BlockEntityPCASynchronizeHandle;
+import net.burningtnt.mca.impl.pcaSyncProtocol.impl.EntityPCASynchronizeHandle;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
@@ -28,20 +25,30 @@ public final class PCAProtocol {
 
     public static final AbstractPCASynchronizeHandle<Entity> H_ENTITY = new EntityPCASynchronizeHandle();
     public static final AbstractPCASynchronizeHandle<BlockEntity> H_BE = new BlockEntityPCASynchronizeHandle();
-    public static final AbstractPCASynchronizeHandle<?>[] HANDLES = {H_ENTITY, H_BE};
 
     public static void initialize() {
         NetworkingHandle.register(ENABLE_PCA_SYNC_PROTOCOL, PacketState.S2C, null);
         NetworkingHandle.register(DISABLE_PCA_SYNC_PROTOCOL, PacketState.S2C, null);
 
+        H_ENTITY.register();
+        H_BE.register();
+
         ServerPlayConnectionEvents.JOIN.register((handler, sender, s) -> {
+            if (!MWSCarpetSettings.pcaSyncProtocol) {
+                return;
+            }
+
             ServerPlayerEntity player = handler.player;
-            NetworkingHandle.send(player, ENABLE_PCA_SYNC_PROTOCOL, new PacketByteBuf(Unpooled.buffer()));
+            NetworkingHandle.send(player, ENABLE_PCA_SYNC_PROTOCOL, NetworkingHandle.NULL_BUFFER);
         });
 
-        for (AbstractPCASynchronizeHandle<?> handle : HANDLES) {
-            handle.register();
-        }
+        MWSCarpetSettings.registerListener("pcaSyncProtocol", server -> {
+            Identifier packet = MWSCarpetSettings.pcaSyncProtocol ? ENABLE_PCA_SYNC_PROTOCOL : DISABLE_PCA_SYNC_PROTOCOL;
+
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                NetworkingHandle.send(player, packet, NetworkingHandle.NULL_BUFFER);
+            }
+        });
     }
 
     private PCAProtocol() {
@@ -49,13 +56,5 @@ public final class PCAProtocol {
 
     private static Identifier ofPacket(String id) {
         return Identifier.of("pca", id);
-    }
-
-    public static boolean shouldEnableLargeBarrel() {
-        if (FabricLoader.getInstance().isModLoaded("carpet")) {
-            return (boolean) CarpetServer.settingsManager.getCarpetRule("largeBarrel").value();
-        } else {
-            return false;
-        }
     }
 }

@@ -1,6 +1,6 @@
-package net.burningtnt.mca.mixin.lsb;
+package net.burningtnt.mca.mixin.legacyStackableShulkerBoxes;
 
-import net.burningtnt.mca.lsb.LegacyShulkerBoxStacker;
+import net.burningtnt.mca.impl.legacyStackableShulkerBoxes.LegacyShulkerBoxStacker;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;

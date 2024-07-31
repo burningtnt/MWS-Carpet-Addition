@@ -1,6 +1,6 @@
-package net.burningtnt.mca.mixin.pca.block;
+package net.burningtnt.mca.mixin.pcaSyncProtocol.block;
 
-import net.burningtnt.mca.pca.PCAProtocol;
+import net.burningtnt.mca.impl.pcaSyncProtocol.PCAProtocol;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.Hopper;

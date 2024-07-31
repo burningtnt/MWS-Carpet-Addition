@@ -1,4 +1,4 @@
-package net.burningtnt.mca.lsb;
+package net.burningtnt.mca.impl.legacyStackableShulkerBoxes;
 
 import net.burningtnt.mca.carpet.MWSCarpetSettings;
 import net.minecraft.block.ShulkerBoxBlock;
@@ -26,7 +26,7 @@ public final class LegacyShulkerBoxStacker {
         return stack.getMaxCount();
     }
 
-    private static boolean shouldOverride(ItemStack stack) {
+    public static boolean shouldOverride(ItemStack stack) {
         return MWSCarpetSettings.legacyStackableShulkerBoxes && stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock;
     }
 }

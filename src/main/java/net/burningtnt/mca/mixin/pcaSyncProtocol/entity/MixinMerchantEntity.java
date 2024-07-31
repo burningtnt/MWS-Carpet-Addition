@@ -1,6 +1,6 @@
-package net.burningtnt.mca.mixin.pca.entity;
+package net.burningtnt.mca.mixin.pcaSyncProtocol.entity;
 
-import net.burningtnt.mca.pca.PCAProtocol;
+import net.burningtnt.mca.impl.pcaSyncProtocol.PCAProtocol;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Npc;
 import net.minecraft.entity.passive.MerchantEntity;

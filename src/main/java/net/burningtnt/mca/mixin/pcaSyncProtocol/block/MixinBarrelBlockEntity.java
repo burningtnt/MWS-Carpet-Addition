@@ -1,16 +1,16 @@
-package net.burningtnt.mca.mixin.pca.block;
+package net.burningtnt.mca.mixin.pcaSyncProtocol.block;
 
-import net.burningtnt.mca.pca.PCAProtocol;
+import net.burningtnt.mca.impl.pcaSyncProtocol.PCAProtocol;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(ChestBlockEntity.class)
-public abstract class MixinChestBlockEntity extends LootableContainerBlockEntity {
-    protected MixinChestBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
+@Mixin(BarrelBlockEntity.class)
+public abstract class MixinBarrelBlockEntity extends LootableContainerBlockEntity {
+    protected MixinBarrelBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
     }
 
